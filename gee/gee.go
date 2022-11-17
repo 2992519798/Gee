@@ -1,25 +1,23 @@
 package gee
 
 import (
-	"fmt"
 	"net/http"
 )
 
 // HandlerFunc defines the handler used by gee
 // 提供给框架用户，用来定义路由映射的处理方法
-type HandlerFunc func(w http.ResponseWriter, r *http.Request)
+type HandlerFunc func(*Context)
 
 type Engine struct {
-	router map[string]HandlerFunc
+	router *router
 }
 
 func New() *Engine {
-	return &Engine{router: make(map[string]HandlerFunc)}
+	return &Engine{router: newRouter()}
 }
 
 func (engine *Engine) addRouter(method string, pattern string, handler HandlerFunc) {
-	key := method + "-" + pattern
-	engine.router[key] = handler
+	engine.router.addRouter(method, pattern, handler)
 }
 
 // GET defines the method to add GET request
@@ -39,10 +37,6 @@ func (engine *Engine) RUN(addr string) (err error) {
 
 // ServeHTTP implements the interface of a  Handler (Engine)
 func (engine *Engine) ServeHTTP(w http.ResponseWriter, req *http.Request) {
-	key := req.Method + "-" + req.URL.Path
-	if handler, ok := engine.router[key]; ok {
-		handler(w, req)
-	} else {
-		fmt.Fprintf(w, "404 NOT FOUND: %s\n", req.URL)
-	}
+	c := newContext(w, req)
+	engine.router.handle(c)
 }
