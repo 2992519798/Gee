@@ -17,7 +17,7 @@ func newRouter() *router {
 	}
 }
 
-func parseParttern(pattern string) []string {
+func parsePattern(pattern string) []string {
 	vs := strings.Split(pattern, "/")
 
 	parts := make([]string, 0)
@@ -33,7 +33,7 @@ func parseParttern(pattern string) []string {
 }
 
 func (r *router) addRouter(method string, pattern string, handler HandlerFunc) {
-	parts := parseParttern(pattern)
+	parts := parsePattern(pattern)
 
 	key := method + "-" + pattern
 	_, ok := r.roots[method]
@@ -45,7 +45,7 @@ func (r *router) addRouter(method string, pattern string, handler HandlerFunc) {
 }
 
 func (r *router) getRouter(method string, path string) (*node, map[string]string) {
-	searchParts := parseParttern(path)
+	searchParts := parsePattern(path)
 	params := make(map[string]string)
 	root, ok := r.roots[method]
 
@@ -56,7 +56,7 @@ func (r *router) getRouter(method string, path string) (*node, map[string]string
 	n := root.search(searchParts, 0)
 
 	if n != nil {
-		parts := parseParttern(n.pattern)
+		parts := parsePattern(n.pattern)
 		for index, part := range parts {
 			if part[0] == ':' {
 				params[part[1:]] = searchParts[index]
